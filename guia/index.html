@@ -1,0 +1,566 @@
+<!DOCTYPE html>
+
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>REA em português — engenharia reversa com IA</title>
+<meta name="description" content="Guia em português do REA (Reverse Engineer Anything): o agente de IA fazendo engenharia reversa com Ghidra. Links, casos reais, avaliação e cuidados.">
+<link rel="alternate" hreflang="pt-BR" href="https://inematds.github.io/rea-engenharia-reversa/guia/">
+<link rel="alternate" hreflang="en" href="https://inematds.github.io/rea-engenharia-reversa/guia/en/">
+<link rel="alternate" hreflang="es" href="https://inematds.github.io/rea-engenharia-reversa/guia/es/">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;800&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0c0c10; --bg2:#14141b; --card:#16161e; --line:#272730;
+    --txt:#e9e9ee; --mut:#9a9aa6; --amb:#E2A23B; --amb2:#f0c070; --sky:#38bdf8; --pro:#cbd5e1;
+    color-scheme:dark;
+  }
+  body.light{
+    --bg:#f6f7f9; --bg2:#eceef2; --card:#ffffff; --line:#e1e3ea;
+    --txt:#1a1a22; --mut:#5b5b68; --amb:#b9791d; --amb2:#a16207; --sky:#0369a1; --pro:#b45309;
+    color-scheme:light;
+  }
+  body.light .hero .glow{opacity:.5}
+  body.light pre{background:#0e0e14;color:#d6d6e0}
+  body.light pre .c{color:#8a8a98}
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{margin:0;background:var(--bg);color:var(--txt);font:16px/1.65 Inter,system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+  h1,h2,h3{font-family:Sora,sans-serif;line-height:1.15;margin:0}
+  a{color:var(--amb);text-decoration:none}
+  code,pre{font-family:"JetBrains Mono",monospace}
+  .wrap{max-width:1160px;margin:0 auto;padding:0 22px}
+  .mut{color:var(--mut)} .amb{color:var(--amb)}
+  .chip{display:inline-block;font-size:.72rem;letter-spacing:.14em;text-transform:uppercase;color:var(--amb);font-weight:600;font-family:Sora}
+  nav{position:sticky;top:0;z-index:30;backdrop-filter:blur(12px);background:rgba(12,12,16,.78);border-bottom:1px solid var(--line)}
+  nav .wrap{display:flex;align-items:center;gap:22px;height:60px}
+  nav .brand{display:flex;align-items:center;gap:8px;font-family:Sora;font-weight:800;letter-spacing:-.02em;color:var(--amb)}
+  nav .brand .emoji{font-size:1.25rem}
+  nav .sep{color:var(--mut);opacity:.45}
+  nav .inema{color:var(--sky);font-weight:600;font-size:.88rem;font-family:Sora}
+  nav .inema:hover{filter:brightness(1.15)}
+  nav .pro{color:var(--pro);font-weight:600;font-size:.88rem;font-family:Sora}
+  nav .pro:hover{filter:brightness(1.15)}
+  nav .clubpro{display:inline-flex;align-items:center;gap:6px}
+  nav .links{margin-left:auto;display:flex;align-items:center;gap:20px;font-size:.92rem}
+  nav .links a.sec{color:var(--mut);white-space:nowrap}
+@media(max-width:1260px){nav .links a.sec{display:none}}
+@media(max-width:1900px){nav .links a.sec.opt{display:none}} nav .links a.sec:hover{color:var(--txt)}
+  .lang{display:inline-flex;gap:2px;font-family:Sora;font-size:.78rem}
+  .lang a{color:var(--mut);padding:.2em .45em;border-radius:6px} .lang a.on{color:var(--amb);background:rgba(226,162,59,.12)}
+  .tgl{background:var(--bg2);border:1px solid var(--line);color:var(--txt);width:38px;height:38px;border-radius:10px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;font-size:1.05rem}
+  .tgl:hover{border-color:var(--amb)}
+  .btn{display:inline-block;background:var(--amb);color:#1a1206;font-weight:600;padding:.6em 1.05em;border-radius:10px;font-family:Sora}
+  .btn.ghost{background:transparent;color:var(--txt);border:1px solid var(--line)}
+  @media(max-width:760px){nav .links a.sec{display:none}}
+  @media(max-width:520px){nav .wrap{gap:8px;padding:8px 14px;height:auto;flex-wrap:wrap} nav .links{gap:8px;margin-left:0;width:100%;justify-content:space-between} nav .btn{padding:.45em .7em;font-size:.82rem} .tgl{width:34px;height:34px}}
+  .hero{position:relative;overflow:hidden;border-bottom:1px solid var(--line)}
+  .hero .glow{position:absolute;inset:-40% -20% auto auto;width:70%;height:600px;background:radial-gradient(closest-side,rgba(226,162,59,.22),transparent 70%);pointer-events:none}
+  .hero .wrap{display:grid;grid-template-columns:1.1fr .9fr;gap:40px;align-items:center;padding:74px 22px}
+  .hero h1{font-size:clamp(2.2rem,5vw,3.5rem);font-weight:800;letter-spacing:-.025em}
+  .hero p.lead{font-size:1.18rem;color:var(--mut);margin:1.1em 0 1.6em;max-width:34ch}
+  .hero .cta{display:flex;gap:12px;flex-wrap:wrap}
+  .hero figure{margin:0;border-radius:16px;overflow:hidden;border:1px solid var(--line);box-shadow:0 30px 80px -30px #000}
+  .hero figure img{width:100%;display:block}
+  .resumo{padding:38px 0 34px;border-bottom:1px solid var(--line)}
+  .resumo p{font-size:1.12rem;line-height:1.7;max-width:74ch;margin:.55em 0 0}
+  @media(max-width:780px){.hero .wrap{grid-template-columns:1fr;padding:48px 22px}}
+  section{padding:62px 0;border-bottom:1px solid var(--line)}
+  section h2{font-size:clamp(1.5rem,3.4vw,2.1rem);font-weight:800;letter-spacing:-.02em}
+  section .sub{color:var(--mut);margin:.6em 0 2em;max-width:62ch}
+  .grid{display:grid;gap:16px}
+  .g3{grid-template-columns:repeat(3,1fr)} .g4{grid-template-columns:repeat(4,1fr)} .g2{grid-template-columns:repeat(2,1fr)}
+  @media(max-width:820px){.g3,.g4{grid-template-columns:1fr 1fr}}
+  @media(max-width:540px){.g2,.g3,.g4{grid-template-columns:1fr}}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:20px}
+  .card h3{font-size:1.05rem;margin-bottom:.4em}
+  .card p{color:var(--mut);font-size:.92rem;margin:0}
+  .num{display:inline-flex;width:30px;height:30px;align-items:center;justify-content:center;border-radius:8px;background:rgba(226,162,59,.14);color:var(--amb);font-family:Sora;font-weight:800;font-size:.9rem;margin-bottom:.7em}
+  .flow{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:10px}
+  .flow span{background:var(--bg2);border:1px solid var(--line);border-radius:999px;padding:.45em .9em;font-size:.85rem;font-family:Sora;font-weight:600}
+  .flow .arr{color:var(--amb);border:none;background:none;padding:0 .1em}
+  pre{background:#0a0a0e;border:1px solid var(--line);border-radius:12px;padding:16px 18px;overflow:auto;font-size:.86rem;line-height:1.6;color:#d6d6e0}
+  pre .c{color:#6f6f7c} pre .k{color:var(--amb2)} pre .s{color:#9ece6a}
+  .step{display:grid;grid-template-columns:46px minmax(0,1fr);gap:16px;margin-bottom:26px}
+  .step>div,.card{min-width:0}
+  p code,li code,td code{overflow-wrap:anywhere}
+  .step .b{width:46px;height:46px;border-radius:12px;background:var(--amb);color:#1a1206;font-family:Sora;font-weight:800;font-size:1.25rem;display:flex;align-items:center;justify-content:center}
+  .step h3{font-size:1.12rem;margin-bottom:.3em}
+  .step p{color:var(--mut);margin:.2em 0 .7em}
+  .ex{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+  @media(max-width:680px){.ex{grid-template-columns:1fr}}
+  .ex figure{margin:0;border-radius:14px;overflow:hidden;border:1px solid var(--line)}
+  .ex figure img{width:100%;display:block}
+  .ex figcaption{padding:12px 14px;font-size:.88rem;color:var(--mut);background:var(--card)}
+  .phase{display:flex;gap:14px;padding:16px 0;border-bottom:1px solid var(--line)}
+  .phase:last-child{border:none}
+  .phase .tag{flex:0 0 92px;font-family:Sora;font-weight:800;color:var(--amb)}
+  .phase .d strong{display:block;margin-bottom:.2em}
+  .phase .d span{color:var(--mut);font-size:.92rem}
+  .aviso{border:1px solid var(--line);border-left:3px solid var(--amb);background:var(--card);border-radius:10px;padding:12px 16px;color:var(--mut);font-size:.92rem;max-width:74ch;margin:0 0 26px}
+  footer{padding:46px 0;text-align:center;color:var(--mut);font-size:.9rem}
+  .pill{display:inline-block;border:1px solid var(--line);border-radius:999px;padding:.3em .8em;font-size:.78rem;color:var(--mut);margin:0 4px}
+  .tbl{width:100%;border-collapse:collapse;margin:0 0 22px;font-size:.95rem}
+  .tbl th,.tbl td{border:1px solid var(--line);padding:.65em .8em;text-align:left}
+  .tbl th{background:var(--bg2);color:var(--amb2);font-weight:700}
+  .tbl td:first-child{font-weight:700}
+  .tblwrap{overflow-x:auto}
+</style>
+</head>
+<body>
+
+<nav><div class="wrap">
+  <a class="brand" href="#top"><span class="emoji">🔓</span> REA em português</a>
+  <span class="sep">|</span>
+  <span class="clubpro">
+    <a class="inema" href="https://inema.club" target="_blank" rel="noopener">INEMA.CLUB</a>
+    <span class="sep">-</span>
+    <a class="pro" href="https://inema.pro" target="_blank" rel="noopener">PRO</a>
+  </span>
+  <div class="links">
+    <a class="sec" href="#oque">O que é</a>
+    <a class="sec" href="#servidor">Limite</a>
+    <a class="sec opt" href="#porque">Por que funciona</a>
+    <a class="sec opt" href="#dentro">Por dentro</a>
+    <a class="sec" href="#plataformas">Sem travas</a>
+    <a class="sec" href="#guia">Começar</a>
+    <a class="sec" href="#metodo">Método</a>
+    <a class="sec opt" href="#exemplos">Casos</a>
+    <a class="sec opt" href="#teste64">Teste 6.4</a>
+    <a class="sec" href="#videos">Vídeos</a>
+    <a class="sec" href="#links">Links</a>
+    <span class="lang"><a class="on" href="./">PT</a><a href="en/">EN</a><a href="es/">ES</a></span>
+    <button class="tgl" id="themeToggle" aria-label="Alternar tema" title="Alternar tema">🌙</button>
+    <a class="btn" href="https://github.com/inematds/rea-engenharia-reversa" target="_blank" rel="noopener">GitHub</a>
+  </div>
+</div></nav>
+
+<header class="hero" id="top">
+  <div class="glow"></div>
+  <div class="wrap">
+    <div>
+      <span class="chip">REA · Ghidra · agentes de IA</span>
+      <h1>Seu agente abre qualquer programa e explica <span class="amb">como funciona</span></h1>
+      <p class="lead">O REA dá ao Claude Code, Codex ou Cursor as ferramentas de engenharia reversa. Aqui você entende a tecnologia, vê os casos reais e descobre se vale pra você.</p>
+      <div class="cta">
+        <a class="btn" href="#guia">Começar o guia</a>
+        <a class="btn ghost" href="#videos">▶ Ver os vídeos</a>
+        <a class="btn ghost" href="#links">Ver todos os links</a>
+      </div>
+    </div>
+    <figure><img src="assets/banner.jpg" alt="Engenharia reversa com IA: REA + Ghidra"></figure>
+  </div>
+</header>
+
+<section id="resumo" class="resumo"><div class="wrap">
+  <span class="chip">Em resumo</span>
+  <p>Engenharia reversa é descobrir como um programa funciona olhando só o executável, sem o código-fonte. O REA (Reverse Engineer Anything) é uma ferramenta aberta que liga o seu agente de IA a descompiladores como o Ghidra, da NSA, e devolve as conclusões com a prova e os limites de cada uma. Serve para desenvolvedores, gente de segurança e quem estuda software. Este guia reúne os links, explica tudo em português, mostra casos reais e um teste feito aqui. Para usar, você precisa de Node.js e de um agente de IA no terminal.</p>
+</div></section>
+
+<section id="oque"><div class="wrap">
+  <span class="chip">O que é</span>
+  <h2>Uma ponte entre o seu agente e as ferramentas de especialista</h2>
+  <p class="sub">O REA não é um descompilador novo. Ele dá ao agente comandos simples em cima do Ghidra, do Hopper e do IDA, que antes levavam semanas pra dominar.</p>
+  <figure style="margin:0 0 26px;border-radius:16px;overflow:hidden;border:1px solid var(--line);box-shadow:0 30px 80px -30px #000"><img src="assets/banner-grade.jpg" alt="Engenharia reversa com IA: o que é, Ghidra, como funciona, casos, vale a pena, cuidados" loading="lazy" style="width:100%;display:block"></figure>
+  <div class="grid g3">
+    <div class="card"><h3>🔍 Sem o código-fonte</h3><p>Abre binários nativos (Mac, Windows, Linux), apps Electron/JavaScript, .NET, Android e sites, e mostra como uma função funciona.</p></div>
+    <div class="card"><h3>🧾 Com prova anexada</h3><p>Cada resposta vem em quatro partes: evidência, mapa recuperado, limites e o que ficou sem resposta. Nada de parágrafo "confia em mim".</p></div>
+    <div class="card"><h3>💻 Tudo na sua máquina</h3><p>A análise roda localmente. O programa analisado não é enviado; só os resultados vão para o modelo do seu agente.</p></div>
+  </div>
+</div></section>
+
+<section id="fluxo"><div class="wrap">
+  <span class="chip">Como funciona</span>
+  <h2>Do binário à explicação</h2>
+  <p class="sub">Compilar apaga nomes, tipos e comentários. Engenharia reversa é o caminho de volta, e o REA põe o agente para fazer esse caminho.</p>
+  <div class="flow">
+    <span>Você pergunta ao agente</span><span class="arr">→</span>
+    <span>REA (servidor MCP)</span><span class="arr">→</span>
+    <span>Ghidra · Hopper · IDA</span><span class="arr">→</span>
+    <span>pseudocódigo, chamadas, textos</span><span class="arr">→</span>
+    <span>evidência + limites</span><span class="arr">→</span>
+    <span>o agente explica ou implementa</span>
+  </div>
+  <div class="ex" style="margin-top:26px">
+    <figure><img src="assets/02a-compilar.jpg" alt="Código-fonte passa pelo compilador e vira binário" loading="lazy"><figcaption>Compilar transforma o código em instruções de máquina; os nomes somem pelo caminho.</figcaption></figure>
+    <figure><img src="assets/03a-electron.jpg" alt="Electron fácil, nativo difícil" loading="lazy"><figcaption>App Electron ainda guarda o JavaScript (análise fácil, sem rodar nada). App nativo precisa de descompilador.</figcaption></figure>
+    <figure><img src="assets/04a-ferramentas.jpg" alt="Ghidra grátis, Hopper, IDA Pro caro" loading="lazy"><figcaption>Ghidra (grátis, da NSA), Hopper (leve) e IDA Pro (padrão da indústria, caro): o REA usa o que você tiver.</figcaption></figure>
+    <figure><img src="assets/05a-ponte.jpg" alt="Seu agente, REA via MCP, Ghidra Hopper IDA" loading="lazy"><figcaption>O agente fala com o REA por MCP: "abrir binário", "achar textos", "quem chama essa função?".</figcaption></figure>
+  </div>
+</div></section>
+
+<section id="porque"><div class="wrap">
+  <span class="chip">Por que funciona</span>
+  <h2>O programa original é a especificação</h2>
+  <p class="sub">O motivo de o REA dar tão certo não é o modelo de IA. É a referência.</p>
+  <div class="grid g3">
+    <div class="card"><h3>🎯 Referência pronta</h3><p>Quando você clona um programa que já existe, o próprio programa diz como o resultado tem que ficar. Ninguém precisa explicar a intenção: ela já vem pronta.</p></div>
+    <div class="card"><h3>🔁 Ciclo fechado</h3><p>O agente constrói, compara com o original e sabe na hora se acertou. É um ciclo de validação que não depende de você. Foi assim que o DX-Ball chegou a 140 funções idênticas byte a byte.</p></div>
+    <div class="card"><h3>⚠️ O engano</h3><p>Isso não prova que o agente constrói qualquer coisa. O que você quer criar ainda não existe. Sem referência, o agente escreve código bom que erra o alvo. A saída é <b>criar a referência</b>: requisitos, exemplos e uma comparação lado a lado no fim.</p></div>
+  </div>
+  <p class="mut" style="margin-top:14px">O teste que vale para qualquer habilidade: se o próximo modelo for duas vezes melhor, ela importa mais ou menos? Truques de prompt importam menos. Saber explicar o que você quer, e montar a referência para o agente se conferir, importa mais.</p>
+</div></section>
+
+<section id="servidor"><div class="wrap">
+  <span class="chip">O limite · servidor</span>
+  <h2>O que roda no servidor, ninguém consegue fazer o reverso</h2>
+  <p class="sub">O REA lê o que está <b>no seu computador</b>: o app, o binário, o JavaScript. Os dados e a lógica que ficam no servidor da empresa nunca chegam até você, então não há o que abrir. Você vê o que o app envia e recebe, nunca como o servidor decide.</p>
+  <div class="grid g3">
+    <div class="card" style="border-color:var(--amb)"><h3>🔒 Fica fora de alcance</h3><p>Banco de dados e contas dos usuários, regras de negócio e preços, modelos de IA e prompts, pagamentos, chaves e senhas do servidor.</p></div>
+    <div class="card" style="border-color:var(--amb)"><h3>💸 Clonou a tela, não o motor</h3><p>Para a sua versão funcionar, você precisa recriar o servidor e pagar por ele: hospedagem, banco, APIs de IA. Muitas vezes é a parte mais cara do sistema.</p></div>
+    <div class="card" style="border-color:var(--amb)"><h3>✂️ O dono pode cortar</h3><p>Se o seu clone usar o servidor original, a empresa bloqueia a chave, muda a API ou derruba o acesso quando quiser, e tudo para de funcionar.</p></div>
+  </div>
+  <div class="card" style="margin-top:16px"><p><b>Para quem cria app:</b> o que é valioso fica no servidor. Assuma que qualquer agente mapeia o seu app; o que protege é o servidor, os dados e a confiança, não o código fechado. <a href="https://www.youtube.com/watch?v=jZui-hQsaDY" target="_blank" rel="noopener">▶ Vídeo: lê o app, não o servidor</a></p></div>
+</div></section>
+
+<section id="pre"><div class="wrap">
+  <span class="chip">Pré-requisitos</span>
+  <h2>O que você precisa</h2>
+  <p class="sub">Para apps JavaScript/Electron basta o Node. Para binários nativos, um descompilador instalado.</p>
+  <div class="grid g3">
+    <div class="card"><h3>Node.js</h3><p>Versões 22.19+, 24.11+ ou 26+ (23 e 25 não são suportadas).</p><pre><span class="k">node</span> -v</pre></div>
+    <div class="card"><h3>Um agente com MCP</h3><p>Claude Code, Claude Desktop, Codex, Cursor, Gemini CLI, Windsurf, OpenCode, Copilot CLI, VS Code e outros.</p><pre><span class="k">claude</span> --version</pre></div>
+    <div class="card"><h3>Descompilador (só p/ nativo)</h3><p>Ghidra (grátis, precisa de Java), Hopper ou IDA. O setup pode instalar o Hopper, com sua permissão.</p><pre><span class="c"># Ghidra: baixe em</span>
+<span class="s">github.com/NationalSecurityAgency/ghidra/releases</span></pre></div>
+  </div>
+</div></section>
+
+<section id="custo"><div class="wrap">
+  <span class="chip">Ferramentas · custo</span>
+  <h2>Qual descompilador usar, e quanto custa</h2>
+  <p class="sub">Dos três que o REA aceita, só o Ghidra é totalmente gratuito e aberto. O IDA tem uma versão Free, com limites.</p>
+  <div class="tblwrap"><table class="tbl"><thead><tr><th>Ferramenta</th><th>Gratuita?</th><th>Código aberto?</th><th>Preço</th></tr></thead><tbody><tr><td>Ghidra</td><td>Sim</td><td>Sim</td><td>US$ 0</td></tr><tr><td>Hopper</td><td>Teste grátis</td><td>Não</td><td>Licença paga</td></tr><tr><td>IDA</td><td>Versão Free</td><td>Não</td><td>Pro a partir de ~US$ 1.099/ano</td></tr></tbody></table></div>
+  <div class="grid g3">
+    <div class="card"><h3>1. Ghidra — a recomendação</h3><p>Feito pela NSA, roda em Windows, Linux e Mac, descompila e aceita automação por scripts. Sem custo de licença, inclusive para uso comercial.</p><p><a href="https://github.com/NationalSecurityAgency/ghidra" target="_blank" rel="noopener">GitHub oficial →</a></p></div>
+    <div class="card"><h3>2. Hopper — alternativa no Mac</h3><p>Comercial, com teste gratuito. A versão atual anuncia integração MCP nativa, o que interessa para agentes de IA.</p><p><a href="https://www.hopperapp.com/" target="_blank" rel="noopener">Site oficial →</a></p></div>
+    <div class="card"><h3>3. IDA — o profissional</h3><p>O IDA Free só cobre x86/x64 e uso não comercial, e não traz o IDAPython dos planos pagos, o que atrapalha a automação.</p><p><a href="https://hex-rays.com/pricing" target="_blank" rel="noopener">Versões e preços →</a></p></div>
+  </div>
+  <h3 style="margin-top:28px">E quanto custa montar com o REA?</h3>
+  <div class="tblwrap"><table class="tbl"><tbody><tr><td>Agente de IA (Codex ou Claude Code)</td><td>Variável: assinatura ou tokens</td></tr><tr><td>REA + MCP</td><td>Grátis (MIT): faz a integração e a orquestração</td></tr><tr><td>Ghidra</td><td>Grátis e aberto</td></tr></tbody></table></div>
+  <p><b>Conclusão:</b> para montar o seu próprio sistema de engenharia reversa com agentes, comece com <b>REA + Ghidra + Codex</b>. Não há licença de descompilador para pagar, e a análise roda numa máquina Windows ou Linux, inclusive numa VPS bem configurada. O custo principal fica no processamento e nos tokens da IA, se você usar modelo pago. Preços mudam: confira nos sites oficiais antes de comprar.</p>
+</div></section>
+
+<section id="dentro"><div class="wrap">
+  <span class="chip">Por dentro · técnico</span>
+  <h2>CLI e servidor MCP sobre o mesmo núcleo</h2>
+  <p class="sub">Lido no código da versão 6.4.0 (12/10/2026). O REA não decompila sozinho: ele orquestra motores de especialista e devolve tudo no mesmo formato de evidência.</p>
+  <figure style="margin:0 0 22px;border-radius:16px;overflow:hidden;border:1px solid var(--line)"><img src="assets/rea-arquitetura.jpg" alt="Arquitetura do REA: agente, CLI e servidor MCP, núcleo Evidence e motores Ghidra, Hopper, IDA, Frida e JS/Electron" loading="lazy" style="width:100%;display:block"></figure>
+  <div class="grid g2">
+    <div class="card"><h3>Duas portas, um núcleo</h3><p><code>scripts/rea.mjs</code> é a entrada: <code>rea mcp</code> sobe o servidor MCP (stdio); qualquer outro comando vai para a CLI. As duas usam a mesma camada de aplicação e o mesmo contrato de evidência. São cerca de 150 comandos na CLI e mais de 100 ferramentas MCP.</p></div>
+    <div class="card"><h3>Tudo vira Evidence</h3><p>Cada resposta traz <code>evidence_id</code>, o <code>sha256</code> do arquivo analisado, quem produziu (<code>provider</code>), o grau de confiança e uma lista de <code>limitations</code>. Quando não sabe, declara. Numa comparação de versões, só diz "removido" se a cobertura do outro lado for completa; senão, marca como desconhecido.</p></div>
+  </div>
+  <div class="tblwrap" style="margin-top:18px"><table class="tbl"><thead><tr><th>Motor</th><th>Para quê</th><th>Licença</th><th>Linux ARM64</th></tr></thead><tbody>
+    <tr><td>JavaScript/Electron (embutido)</td><td>Grafo do app, IPC, source maps, sem executar</td><td>Grátis</td><td>Sim (testado)</td></tr>
+    <tr><td>Ghidra 12.1 + JDK 21</td><td>Binário nativo: pseudocódigo, referências</td><td>Grátis</td><td>Sim, com o decompilador compilado para ARM</td></tr>
+    <tr><td>Hopper</td><td>Binário nativo</td><td>Pago, com demo</td><td>Não pelo setup (baixa o pacote x86)</td></tr>
+    <tr><td>IDA · JEB</td><td>Nativo · Android</td><td>Pagos</td><td>Depende do produto</td></tr>
+    <tr><td>Frida · navegador (CDP) · adb</td><td>Observar em execução</td><td>Grátis</td><td>Sim</td></tr>
+  </tbody></table></div>
+  <div class="card" style="margin-top:16px"><h3>O que o <code>setup</code> grava</h3><p>Claude Code: <code>~/.claude.json</code> e a skill em <code>~/.claude/skills</code>. Codex: <code>~/.codex/config.toml</code>. OpenCode: <code>opencode.json</code>. Ele mostra o plano, pede aprovação, faz cópia <code>.rea.backup</code> e fixa a versão. Rode antes com <code>--dry-run</code>; para desfazer, <code>rea uninstall</code>. O projeto avisa: não é um sandbox, e não encontramos envio de dados de uso no código.</p></div>
+</div></section>
+
+<section id="plataformas"><div class="wrap">
+  <span class="chip">Sem travas · nuvem</span>
+  <h2>Sem máquina? Duas plataformas no estilo da OpenRouter</h2>
+  <p class="sub">Claude, Codex e Gemini às vezes recusam partes de uma engenharia reversa, mesmo legítima. A saída é um modelo aberto, sem recusa. Se o seu computador não roda o modelo, estas duas plataformas pré-pagas hospedam para você: põe US$ 5 a 10 de crédito, pega a chave e pede ao agente (dsh, Claude Code, Codex) para usá-la.</p>
+  <div class="grid g2">
+    <div class="card"><h3>1. abliteration.ai</h3><p>Modelos abertos <b>"abliterated"</b> (com o reflexo de recusar removido dos pesos), por API compatível com a da OpenAI. Pré-pago por token ou plano mensal.</p><pre><span class="c"># Endereço da API</span>
+<span class="s">https://api.abliteration.ai/v1</span></pre><p><a href="https://abliteration.ai" target="_blank" rel="noopener">Abrir o site →</a></p></div>
+    <div class="card"><h3>2. OrcaRouter</h3><p>Roteador com mais de 200 modelos num só endereço, igual à OpenRouter. Tem versão aberta (MIT) que você mesmo pode hospedar.</p><p><a href="https://orcarouter.ai" target="_blank" rel="noopener">Abrir o site →</a></p></div>
+  </div>
+  <div class="card" style="margin-top:16px;border-color:var(--amb)"><p><b>Atenção:</b> na nuvem, <b>o seu código sai da máquina</b>. Para app seu ou arquivo sensível, prefira o modelo local (Ollama). Preços e catálogo mudam: confira na página antes de pôr crédito.</p></div>
+  <p>Passo a passo completo, com o dsh e os modelos locais testados: <a href="https://inematds.github.io/rea-sem-travas/guia/" target="_blank" rel="noopener">REA sem travas →</a></p>
+</div></section>
+
+<section id="guia"><div class="wrap">
+  <span class="chip">Guia de uso · passo a passo</span>
+  <h2>Começar em 4 passos</h2>
+  <p class="sub">Comandos do próprio projeto. O REA muda quase todo dia: confira a versão antes.</p>
+
+  <div class="step"><div class="b">1</div><div>
+    <h3>Teste sem instalar nada</h3>
+    <p>A análise estática de um app Electron não precisa de Ghidra nem de MCP, e não executa o app. Aponte para a pasta ou o <code>app.asar</code>.</p>
+<pre><span class="k">npx -y rea-agents@latest analyze-javascript-application</span> <span class="s">/caminho/absoluto/app.asar</span> \
+  --max-heap-mb 1024 --analysis-timeout-ms 60000 --json</pre>
+  </div></div>
+
+  <div class="step"><div class="b">2</div><div>
+    <h3>Ligue o REA ao seu agente</h3>
+    <p>O setup mostra o plano, faz cópia da sua configuração e pergunta antes de mudar. Registra o servidor MCP e instala o método de investigação (skill).</p>
+<pre><span class="k">npx rea-agents setup --dry-run</span>   <span class="c"># mostra o que vai gravar, sem gravar</span>
+<span class="k">npx rea-agents setup</span>             <span class="c"># reinicie o agente depois</span></pre>
+  </div></div>
+
+  <div class="step"><div class="b">3</div><div>
+    <h3>Confira só o que a sua tarefa precisa</h3>
+    <p>O <code>doctor</code> com escopo testa um agente ou um motor específico, sem reprovar por algo que você nem vai usar.</p>
+<pre><span class="k">rea doctor</span> --client claude_code --json
+<span class="k">rea doctor</span> --provider ghidra --json</pre>
+  </div></div>
+
+  <div class="step"><div class="b">4</div><div>
+    <h3>Peça ao agente</h3>
+    <p>Em linguagem normal, com um programa seu ou que você tem autorização para analisar.</p>
+<pre><span class="s">"Entenda como a busca funciona no app X, me mostre a evidência
+e faça algo parecido no meu projeto."</span></pre>
+  </div></div>
+</div></section>
+
+<section id="metodo"><div class="wrap">
+  <span class="chip">Método · 5 passos</span>
+  <h2>Uma função por vez, com prova antes de construir</h2>
+  <p class="sub">O REA traz a evidência e o seu agente escreve o código. O método abaixo é o que separa uma cópia mal feita de uma versão sua que funciona.</p>
+  <p class="aviso"><b>Exemplo simulado.</b> Para ilustrar, imaginamos o REA estudando a busca rápida (Ctrl+O) do Obsidian, um app Electron. Não rodamos esse teste: os achados abaixo mostram o <i>formato</i> do trabalho, não um resultado medido.</p>
+
+  <div class="grid g2" style="margin-bottom:34px">
+    <div class="card"><h3>🎂 O bolo e a receita</h3><p>A empresa guarda a receita, que é o código-fonte. Você tem o bolo, que é o app instalado. O REA prova o bolo e o agente deduz uma receita aproximada, sem os nomes originais. Depois você assa o seu e compara, até o gosto bater.</p></div>
+    <div class="card"><h3>📚 O livro da biblioteca</h3><p>Você não precisa ser dono do app, precisa ter o direito de examiná-lo. Ler e aprender pode. Fotocopiar e vender (copiar o código), quebrar o cadeado (DRM) ou passar escondido pelo balcão (trapaça, login) não pode.</p></div>
+  </div>
+
+  <div class="step"><div class="b">1</div><div>
+    <h3>Escolha uma função, não o app inteiro</h3>
+    <p>Pedido amplo dá resposta vaga. Pergunte sobre um comportamento que você consegue ver e testar.</p>
+    <div class="tblwrap"><table class="tbl"><thead><tr><th>Amplo demais</th><th>Focado</th></tr></thead><tbody>
+      <tr><td>"Reverta o Obsidian"</td><td>Como a busca rápida acha a nota certa com só três letras?<br>Como um <code>[[link]]</code> vira linha no gráfico de notas?<br>Como o app percebe que um arquivo mudou fora dele?</td></tr>
+    </tbody></table></div>
+  </div></div>
+
+  <div class="step"><div class="b">2</div><div>
+    <h3>Do que o app é feito define a ferramenta</h3>
+    <p>O Obsidian é Electron: o JavaScript vem junto no <code>app.asar</code>, e o analisador de JavaScript do REA basta. Grátis, sem Ghidra e sem executar o app.</p>
+    <div class="tblwrap"><table class="tbl"><thead><tr><th>Tipo de app</th><th>Exemplos</th><th>Ferramenta</th></tr></thead><tbody>
+      <tr><td>Desktop Electron</td><td>Obsidian, Notion, Slack</td><td>Analisador de JavaScript do REA (grátis)</td></tr>
+      <tr><td>Programa nativo</td><td><code>.exe</code>, <code>.app</code>, jogos</td><td>Ghidra (grátis), Hopper ou IDA</td></tr>
+      <tr><td>Site</td><td>qualquer um</td><td>Ferramentas do navegador: só o que chega até você</td></tr>
+      <tr><td>Android ou .NET</td><td>APK, DLL</td><td>Analisadores próprios de cada formato</td></tr>
+    </tbody></table></div>
+  </div></div>
+
+  <div class="step"><div class="b">3</div><div>
+    <h3>Resumo primeiro, depois uma peça</h3>
+    <p>A análise de um app inteiro é grande: no nosso teste da 6.4.0, um app Electron de 210 arquivos gerou um JSON de 41 MB. O agente não precisa ler tudo. Ele lê a visão geral (<code>detail: "summary"</code>), abre o módulo da busca e rastreia só essa função. E não roda a mesma análise duas vezes: guarda o resultado e volta nele.</p>
+    <div class="flow"><span>Análise completa</span><span class="arr">→</span><span>Resumo</span><span class="arr">→</span><span>Um módulo</span><span class="arr">→</span><span>Uma função rastreada</span></div>
+  </div></div>
+
+  <div class="step"><div class="b">4</div><div>
+    <h3>Marque cada achado: visto, inferido ou desconhecido</h3>
+    <p>Antes de construir em cima de um achado, diga de que tipo ele é. No exemplo simulado:</p>
+    <div class="grid g3" style="margin:6px 0 14px">
+      <div class="card"><span class="num">✓</span><h3>Visto</h3><p>Está nos arquivos, com trecho citado. <i>"A lista de notas fica na memória e é filtrada a cada tecla."</i></p></div>
+      <div class="card"><span class="num">≈</span><h3>Inferido</h3><p>Dedução cuidadosa, ainda sem prova. <i>"Letra no começo da palavra parece valer mais pontos que letra no meio."</i></p></div>
+      <div class="card"><span class="num">?</span><h3>Desconhecido</h3><p>O REA não alcança. <i>"O Sync pago resolve conflitos no servidor da empresa."</i></p></div>
+    </div>
+    <p>O desconhecido não é derrota: vira decisão de projeto. Sem acesso ao servidor do Sync, a nossa versão guarda as notas numa pasta local e pronto. E lembre: ler o código não prova que ele roda daquele jeito. Quem prova é o teste.</p>
+  </div></div>
+
+  <div class="step"><div class="b">5</div><div>
+    <h3>Reconstrua o comportamento, com código seu, e teste</h3>
+    <p>Cada achado vira uma decisão e um teste contra o original. Nunca copie código, ícones nem textos do app.</p>
+    <div class="tblwrap"><table class="tbl"><thead><tr><th>Achado (simulado)</th><th>O que significa</th><th>Nossa decisão</th></tr></thead><tbody>
+      <tr><td>Filtro em memória a cada tecla</td><td>Rápido com milhares de notas, sem banco de dados</td><td>Lista em memória e filtro escrito do zero</td></tr>
+      <tr><td>Começo de palavra vale mais</td><td>É inferido: falta confirmar</td><td>30 buscas iguais nos dois apps; a meta é a mesma 1ª nota em todas</td></tr>
+      <tr><td>Sync no servidor</td><td>Fora do alcance do REA</td><td>Fora do escopo: pasta local</td></tr>
+    </tbody></table></div>
+    <p>Encontrou diferença? Volte ao passo 3, rastreie o ponto exato e ajuste. Meta final: o mesmo comportamento e zero linha copiada.</p>
+  </div></div>
+
+  <h3 style="margin:10px 0 .5em">Prompt pronto (troque o que está entre colchetes)</h3>
+<pre><span class="s">Use o REA para entender como funciona [a busca rápida (Ctrl+O)] no [Obsidian].
+Resumo primeiro. Rastreie só essa função.
+Marque cada achado como visto, inferido ou desconhecido.
+Depois construa a minha versão, com código meu, e teste contra o original.</span></pre>
+  <p class="sub" style="margin-top:.8em">Não programa? Pare na terceira linha e peça só o relatório em português simples. <a href="#leigo">Veja o roteiro completo, passo a passo.</a></p>
+</div></section>
+
+<section id="leigo"><div class="wrap">
+  <span class="chip">Na prática · para quem não programa</span>
+  <h2>O meu caderno de notas, a partir do Obsidian instalado no seu PC</h2>
+  <p class="sub">Não é para copiar o Obsidian inteiro de uma vez. É para fazer o <b>seu</b> caderno, uma função por rodada, usando o método acima. Roteiro para Windows.</p>
+  <p class="aviso"><b>Antes de tudo:</b> leia os termos de uso do Obsidian. Estudar para uso pessoal é o terreno seguro. Distribuir ou vender o resultado, ou copiar código, ícones e textos do app, não é.</p>
+
+  <div class="step"><div class="b">0</div><div>
+    <h3>Prepare uma vez só</h3>
+    <p>Instale o <a href="https://nodejs.org" target="_blank" rel="noopener">Node.js</a> (versão LTS: avançar, avançar, concluir) e tenha o Claude Code ou o Codex instalado e logado na sua assinatura.</p>
+  </div></div>
+
+  <div class="step"><div class="b">1</div><div>
+    <h3>Separe uma cópia do app</h3>
+    <p>No Explorador, cole na barra de endereço a pasta abaixo. Copie o arquivo <code>.asar</code> para <code>C:\projetos\meu-caderno\alvo\</code>. O Obsidian costuma ter dois (<code>app.asar</code> e <code>obsidian.asar</code>); o principal costuma ser o <code>obsidian.asar</code>. Na dúvida, copie os dois. Assim você trabalha na cópia, sem mexer no Obsidian que usa.</p>
+<pre><span class="s">%LOCALAPPDATA%\Programs\Obsidian\resources</span></pre>
+  </div></div>
+
+  <div class="step"><div class="b">2</div><div>
+    <h3>Instale o REA</h3>
+    <p>No cmd. Ele pergunta qual agente você usa: escolha o seu, aceite e depois feche e abra o agente de novo.</p>
+<pre><span class="k">npx rea-agents setup</span></pre>
+  </div></div>
+
+  <div class="step"><div class="b">3</div><div>
+    <h3>Abra o agente na pasta</h3>
+<pre><span class="k">cd</span> C:\projetos\meu-caderno
+<span class="k">claude</span>          <span class="c"># ou: codex</span></pre>
+  </div></div>
+
+  <div class="step"><div class="b">4</div><div>
+    <h3>Primeiro só entender</h3>
+    <p>Cole o pedido e leia o relatório. Se algo não ficar claro, pergunte: "o que quer dizer isso?".</p>
+<pre><span class="s">Use o REA para entender como funciona a busca rápida (Ctrl+O)
+no arquivo alvo\obsidian.asar.
+Resumo primeiro. Rastreie só essa função.
+Marque cada achado como visto, inferido ou desconhecido.
+Me explique em português simples. Não construa nada ainda.</span></pre>
+  </div></div>
+
+  <div class="step"><div class="b">5</div><div>
+    <h3>Depois construir a sua versão</h3>
+<pre><span class="s">Agora crie, do zero e com código seu, um caderno de notas simples:
+- abre uma pasta de notas .md
+- tem a busca rápida que você estudou
+Não copie código, ícones nem textos do Obsidian.
+Depois rode, teste 10 buscas nas duas e me mostre as diferenças.</span></pre>
+  </div></div>
+
+  <div class="step"><div class="b">6</div><div>
+    <h3>Repita, uma função por rodada</h3>
+    <p>Mesmo par de pedidos ("entenda X", depois "acrescente X"): os links <code>[[nota]]</code>, o gráfico de notas, perceber quando um arquivo muda fora do app, o tema escuro. Corrija uma diferença por vez e teste sempre com as suas notas de verdade.</p>
+  </div></div>
+
+  <div class="grid g2" style="margin-top:8px">
+    <div class="card"><h3>O que não vem</h3><p>O que roda no servidor: Sync pago, Publish e a loja de plugins. O REA não enxerga. Na sua versão, as notas ficam numa pasta local; para sincronizar, use Google Drive ou OneDrive.</p></div>
+    <div class="card"><h3>Se der erro no Windows</h3><p>Algumas ferramentas do REA só funcionam no Linux. Aí rode o mesmo roteiro no WSL ou numa VPS, como no OSWork.</p></div>
+  </div>
+
+  <div class="card" style="margin-top:26px;border-color:var(--amb)">
+    <h3>💬 Conta pra gente</h3>
+    <p style="margin-bottom:.9em">De onde você está lendo? O que achou desse caso? E aí na sua cidade ou no seu trabalho: as pessoas já usam IA assim, e que programa do dia a dia você queria ter do seu jeito?</p>
+    <p style="margin-bottom:1.1em">Quer aprender a fazer isso? No <b>INEMA.CLUB</b> tem cursos e guias abertos e gratuitos de IA na prática.</p>
+    <a class="btn" href="https://inema.club" target="_blank" rel="noopener">Aprender no INEMA.CLUB</a>
+  </div>
+</div></section>
+
+<section id="exemplos"><div class="wrap">
+  <span class="chip">Casos reais</span>
+  <h2>O que já fizeram com isso</h2>
+  <p class="sub">Números tirados dos repositórios e do site oficial em 10/10/2026.</p>
+  <div class="ex">
+    <figure><img src="assets/07b-regras.jpg" alt="As 3 regras do cofre" loading="lazy"><figcaption><b>O cofre.</b> App compilado sem nomes (242+ funções <code>FUN_…</code>). O agente achou a função certa, recuperou as 3 regras do código e escreveu um gerador: <code>AGNT-1001</code> abriu.</figcaption></figure>
+    <figure><img src="assets/08b-ciclo.jpg" alt="Ciclo rastrear, escrever, compilar, comparar" loading="lazy"><figcaption><b>DX-Ball (anos 90).</b> 528 funções candidatas, 283 reescritas em C, <b>140 idênticas byte a byte</b>. O som esquerda/direita passou em 3.205 testes contra o original.</figcaption></figure>
+    <figure><img src="assets/09a-fone.jpg" alt="Fone e app de um botão" loading="lazy"><figcaption><b>Fone de ouvido.</b> Em ~30 min de idas e vindas, um usuário ganhou um app próprio de um botão para ligar a redução de vento. Outros casos: o copiar e colar do Notion e o padrão de tiros de um jogo de PC-98.</figcaption></figure>
+    <figure><img src="assets/10b-cleanroom.jpg" alt="Clean room: mesmo resultado sem ver o código" loading="lazy"><figcaption><b>PhotoCraft.</b> Outro método (clean room, sem olhar o binário): Photoshop refeito em Rust com documentação pública + testes contra o original. Ainda em alfa.</figcaption></figure>
+  </div>
+</div></section>
+
+<section id="avaliacao"><div class="wrap">
+  <span class="chip">Vale a pena?</span>
+  <h2>Para quem é útil, e para quem não é</h2>
+  <p class="sub">Avaliação feita a partir da documentação, dos casos publicados e de um teste nesta máquina.</p>
+  <div class="grid g2">
+    <div class="card"><h3>✅ Útil de verdade</h3><p>
+      • <b>Desenvolvedores</b> que querem entender como um app muito bom resolve busca, sincronização ou área de transferência.<br>
+      • <b>Segurança e privacidade:</b> auditar os apps da sua máquina e ver o que mandam pra fora.<br>
+      • <b>Recuperar lógica</b> de um programa seu cujo código se perdeu.<br>
+      • <b>Estudo, CTF e preservação</b> de software antigo.<br>
+      • <b>Quem cria ferramentas para IA:</b> o formato evidência · mapa · limites · desconhecidos é um ótimo modelo.</p></div>
+    <div class="card"><h3>⛔ Não é para</h3><p>
+      • Quem não usa terminal: exige Node e paciência com versões que mudam todo dia (5.0 → 6.3 em três dias).<br>
+      • Copiar o produto de um concorrente: arriscado juridicamente e perde o ponto.<br>
+      • Programas muito protegidos (VMProtect, ofuscação pesada) ou com a lógica no servidor.<br>
+      • Esperar milagre de qualquer modelo: em binários protegidos de propósito, até os melhores modelos resolvem só parte dos casos (SRE-Bench).</p></div>
+  </div>
+  <div class="card" style="margin-top:16px"><h3>🧪 Primeiro teste (10/10/2026, versão 6.3.0) · <a href="#teste64">veja o reteste na 6.4.0</a></h3><p>Rodamos o REA 6.3.0 (<code>analyze-javascript-application</code>, sem Ghidra e sem MCP) num servidor Linux ARM. <b>Funcionou</b> num app Node nosso (97 arquivos, 3,5 MB): em 20 s e 1,3 GB de RAM devolveu um grafo com 2.109 nós e 3.104 ligações, 2.508 achados e 5 limitações declaradas, sem executar o app. <b>Travou</b> em dois alvos que tinham um único arquivo JS gigante (o bundle de um app Electron instalado e o <code>typescript/_tsc.js</code>, de 6 MB): ficou a 100% de CPU por mais de 20 min no mesmo arquivo, ignorou o SIGTERM e só parou com <code>kill -9</code>. Conclusão: funciona bem em projetos de tamanho normal; em apps grandes, rode com teto de tempo (<code>timeout -s KILL</code>) e sem <code>node_modules</code>. O JSON completo é enorme (241 MB aqui): no dia a dia, deixe o agente consultar pelo MCP em vez de ler o arquivo inteiro.</p></div>
+  <figure style="margin:26px 0 0;border-radius:16px;overflow:hidden;border:1px solid var(--line)"><img src="assets/11b-diferencial.jpg" alt="Dados, servidor, distribuição, confiança, velocidade" loading="lazy" style="width:100%;display:block"></figure>
+  <p class="mut" style="margin-top:12px">Para quem vende software: assuma que qualquer agente consegue mapear o seu app. O que protege são os dados, o servidor, a distribuição, a confiança e a velocidade, não o código fechado.</p>
+</div></section>
+
+<section id="teste64"><div class="wrap">
+  <span class="chip">Testado aqui · 12/10/2026</span>
+  <h2>Antes e depois: o app que travava, em 94 segundos</h2>
+  <p class="sub">Mesmo servidor Linux ARM64 (Node 24.13), mesmo app Electron que travou na 6.3.0. Rodamos a 6.4.0 isolada: HOME e cache do npm numa pasta de teste e teto de memória e de tempo no processo inteiro.</p>
+  <div class="tblwrap"><table class="tbl"><thead><tr><th>Teste</th><th>Resultado</th></tr></thead><tbody>
+    <tr><td>App Electron (210 arquivos) na <b>6.3.0</b>, 10/10</td><td>Travou: 100% de CPU por mais de 20 min num único arquivo; só parou com <code>kill -9</code></td></tr>
+    <tr><td>O mesmo app na <b>6.4.0</b>, com <code>--max-heap-mb 1024 --analysis-timeout-ms 60000</code></td><td><b>94,5 s</b>, pico de 1,26 GB: 202 arquivos JS lidos, 0 falhas, 7,9 milhões de nós, 4.898 módulos, 13.500 achados. O arquivo que travava guardou os fatos estáticos e o resto virou limitação declarada (377 no total)</td></tr>
+    <tr><td>Projeto Node nosso, sem <code>node_modules</code></td><td>19,7 s, 0,55 GB: grafo com 998 nós e 1.260 ligações, 1.295 achados</td></tr>
+    <tr><td>Binário Go (<code>inspect-artifact</code>)</td><td>1,4 s: formato, hash e inventário do arquivo</td></tr>
+    <tr><td><code>setup --dry-run</code> num HOME de teste</td><td>Nada gravado; o diagnóstico mostra Ghidra e IDA não configurados</td></tr>
+  </tbody></table></div>
+  <h3 style="margin-top:22px">Como rodar do mesmo jeito</h3>
+<pre><span class="c"># HOME de teste: nada toca a configuração do seu agente</span>
+<span class="k">mkdir -p</span> /tmp/rea-teste
+<span class="k">systemd-run --user --scope -p MemoryMax=8G -p RuntimeMaxSec=900</span> \
+  env HOME=/tmp/rea-teste npm_config_cache=/tmp/rea-teste/npm \
+  <span class="k">npx -y rea-agents@6.4.0 analyze-javascript-application</span> <span class="s">/caminho/absoluto/app.asar</span> \
+  --max-heap-mb 1024 --analysis-timeout-ms 60000 --json &gt; evidencia.json</pre>
+  <p class="mut">O que mudou na 6.4.0: cada análise roda num processo separado, com limite de memória e de tempo, e pode ser interrompida no meio devolvendo o que já concluiu. Sem Linux? Troque o <code>systemd-run</code> por um limite de tempo do seu sistema. O JSON sai grande (41 MB aqui): no dia a dia, deixe o agente consultar pelo MCP.</p>
+</div></section>
+
+<section id="videos"><div class="wrap">
+  <span class="chip">Vídeos</span>
+  <h2>Todos os vídeos sobre o REA</h2>
+  <p class="sub">Do conceito ao técnico. Os longos têm player com capítulos e legendas na <a href="../videos/">página de vídeos</a>.</p>
+  <div class="grid g3">
+    <div class="card"><h3>🏦 Lê o app, não o servidor</h3><p>Por que o REA lê o app do seu banco e não mexe na sua conta, o que vaza e a regra para quem cria app. <a href="../videos/#servidor">Assistir</a> · <a href="https://www.youtube.com/shorts/Wz1XZyEyFI8">reel</a></p></div>
+    <div class="card"><h3>🧠 REA por dentro (técnico)</h3><p>Por que funciona, arquitetura, evidência, o teste antes e depois e os limites. <a href="../videos/#tecnico">Assistir</a></p></div>
+    <div class="card"><h3>🛠️ REA na prática</h3><p>Clone um app em 4 passos e o erro que travou o teste. <a href="../videos/#na-pratica">Assistir</a> · <a href="https://www.youtube.com/shorts/B9D1phZJXWM" target="_blank" rel="noopener">reel</a></p></div>
+    <div class="card"><h3>🔓 A IA que faz engenharia reversa</h3><p>O que é, Ghidra, o cofre, o DX-Ball e os cuidados (6 min). <a href="../videos/#completo">Assistir</a></p></div>
+    <div class="card"><h3>📱 Dá pra clonar o app que você usa</h3><p>O ângulo viral: corrida com e sem REA. <a href="https://www.youtube.com/watch?v=dwxV0xXdElk" target="_blank" rel="noopener">YouTube</a> · <a href="https://www.youtube.com/shorts/eTgtEf5bnvU" target="_blank" rel="noopener">curto</a></p></div>
+    <div class="card"><h3>🤔 Recria quase qualquer app?</h3><p>O barulho e o que é de verdade. <a href="https://www.youtube.com/watch?v=QQFhiUch0kk" target="_blank" rel="noopener">YouTube</a></p></div>
+    <div class="card"><h3>⚡ Reels</h3><p><a href="https://www.youtube.com/shorts/Hlmma9RB-UM" target="_blank" rel="noopener">Clonar qualquer software</a> · <a href="https://www.youtube.com/shorts/HwbWFVrWC4w" target="_blank" rel="noopener">Nem precisa de ferramenta</a> · <a href="https://www.youtube.com/shorts/QWLSY0LfUAY" target="_blank" rel="noopener">Explode a mente</a></p></div>
+  </div>
+</div></section>
+
+<section id="links"><div class="wrap">
+  <span class="chip">Links</span>
+  <h2>Todos os repositórios</h2>
+  <p class="sub">Projetos de terceiros. Estrelas e versões conferidas em 10/10/2026; o REA, em 12/10/2026.</p>
+  <div class="grid g3">
+    <div class="card"><h3><a href="https://github.com/morluto/rea" target="_blank" rel="noopener">morluto/rea</a></h3><p>O REA: MCP + CLI de engenharia reversa para agentes. TypeScript, MIT, ~144 mil estrelas, versão 6.4.0 (12/10/2026).</p></div>
+    <div class="card"><h3><a href="https://rea.tools/" target="_blank" rel="noopener">rea.tools</a></h3><p>Site oficial com guias ilustrados (nativo, JavaScript, navegador) e os estudos de caso.</p></div>
+    <div class="card"><h3><a href="https://github.com/NationalSecurityAgency/ghidra" target="_blank" rel="noopener">Ghidra (NSA)</a></h3><p>Descompilador gratuito e aberto da NSA. Java, Apache-2.0, ~82 mil estrelas, versão 12.1.4.</p></div>
+    <div class="card"><h3><a href="https://github.com/N0zoM1z0/dx-ball" target="_blank" rel="noopener">N0zoM1z0/dx-ball</a></h3><p>DX-Ball 1.07 reconstruído em C/C++ com REA + Ghidra, testado byte a byte. MIT. Os arquivos do jogo não vêm junto.</p></div>
+    <div class="card"><h3><a href="https://github.com/N0zoM1z0/th04" target="_blank" rel="noopener">N0zoM1z0/th04</a></h3><p>Reconstrução de um jogo de PC-98 (DOS, 16 bits): o cálculo dos anéis de tiros. MIT.</p></div>
+    <div class="card"><h3><a href="https://github.com/storytold/photocraft" target="_blank" rel="noopener">storytold/photocraft</a></h3><p>Photoshop refeito do zero em Rust (clean room), ~39 mil estrelas, alfa. Também <a href="https://github.com/storytold/filmcraft" target="_blank" rel="noopener">FilmCraft</a> (Premiere) e <a href="https://github.com/storytold/lightcraft" target="_blank" rel="noopener">LightCraft</a> (Lightroom), da suíte <a href="https://github.com/storytold/artcraft" target="_blank" rel="noopener">ArtCraft</a>.</p></div>
+    <div class="card"><h3><a href="https://daplab.cs.columbia.edu/projects/sre-bench/" target="_blank" rel="noopener">SRE-Bench</a></h3><p>Benchmark da Universidade Columbia: agentes fazendo engenharia reversa de binários com proteção. Em desenvolvimento.</p></div>
+    <div class="card"><h3><a href="https://github.com/inematds/rea-engenharia-reversa" target="_blank" rel="noopener">Este guia</a></h3><p>README em PT/EN/ES com os links e a avaliação.</p></div>
+  </div>
+</div></section>
+
+<section id="cuidados"><div class="wrap">
+  <span class="chip">Cuidados</span>
+  <h2>Antes de apontar para um programa</h2>
+  <p class="sub">O próprio REA avisa: a responsabilidade é sua.</p>
+  <div class="ex">
+    <figure><img src="assets/12a-cuidados.jpg" alt="Licença e lei, não é sandbox, muda todo dia" loading="lazy"><figcaption>Três cuidados que valem para qualquer uso.</figcaption></figure>
+    <div>
+      <div class="phase"><div class="tag">1 · Lei</div><div class="d"><strong>Licença e lei</strong><span>Muitas licenças proíbem engenharia reversa; quebrar proteção contra cópia é outro problema. Terreno seguro: seus programas, código aberto, desafios de segurança e o que você tem autorização para testar. Não é aconselhamento jurídico.</span></div></div>
+      <div class="phase"><div class="tag">2 · Isole</div><div class="d"><strong>Não é sandbox</strong><span>Se o REA executar o alvo, ele roda com as suas permissões. Um binário estranho pode esconder instruções para enganar o agente. Use máquina isolada e mantenha as aprovações do agente ligadas.</span></div></div>
+      <div class="phase"><div class="tag">3 · Atualize</div><div class="d"><strong>Muda todo dia</strong><span>Rode <code>rea update</code> ou <code>npx rea-agents@latest setup</code> antes de reportar um problema.</span></div></div>
+    </div>
+  </div>
+</div></section>
+
+<footer>
+  <div class="wrap">
+    <div class="pill">REA</div><div class="pill">Ghidra</div><div class="pill">MCP</div><div class="pill">Claude Code · Codex</div>
+    <p style="margin-top:18px">REA em português · guia independente, sem vínculo com os autores ·
+      <a href="https://github.com/inematds/rea-engenharia-reversa">inematds/rea-engenharia-reversa</a> ·
+      <a href="https://inema.club">INEMA.CLUB</a></p>
+  </div>
+</footer>
+
+<script>
+  (function(){
+    var KEY='rea-engenharia-reversa-theme'; // troque rea-engenharia-reversa pelo nome do projeto
+    var b=document.body, t=document.getElementById('themeToggle');
+    if(localStorage.getItem(KEY)==='light'){ b.classList.add('light'); t.textContent='☀️'; }
+    t.addEventListener('click',function(){
+      var light=b.classList.toggle('light');
+      t.textContent=light?'☀️':'🌙';
+      localStorage.setItem(KEY, light?'light':'dark');
+    });
+  })();
+</script>
+</body>
+</html>
