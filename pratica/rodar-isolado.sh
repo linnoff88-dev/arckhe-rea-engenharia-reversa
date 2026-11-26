@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Roda o REA sem tocar na configuração do seu agente: HOME e cache do npm numa pasta de teste,
+# Roda o REA sem tocar na configuraçêo do seu agente: HOME e cache do npm numa pasta de teste,
 # teto de memória e de tempo no processo inteiro (systemd-run, Linux). Mede tempo e pico de RAM.
 #
 # Uso:  ./rodar-isolado.sh <nome> <segundos> <argumentos do rea...>
