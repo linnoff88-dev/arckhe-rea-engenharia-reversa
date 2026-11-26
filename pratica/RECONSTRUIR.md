@@ -54,7 +54,7 @@ Depois peça ao dsh: *"instale isto e me ajude a usar para fazer engenharia reve
 
 Preços e catálogo mudam: confira na página antes de pôr crédito. Na nuvem, **o seu código sai da máquina**. Para app seu ou arquivo sensível, prefira o modelo local.
 
-Passo a passo completo desta montagem, com prompts e os modelos conferidos: **[REA sem travas](https://inematds.github.io/rea-sem-travas/guia/)**.
+Passo a passo completo desta montagem, com prompts e os modelos conferidos: **[REA sem travas](https://linnoff88-dev.github.io/arckhe-/guia/)**.
 
 > "Sem trava" quer dizer o modelo nêo recusar trabalho **legítimo** (app seu, interoperabilidade, estudo, segurança autorizada). Nêo é licença para quebrar proteçêo contra cópia, DRM ou licença, nem para redistribuir o que é dos outros.
 
@@ -66,7 +66,7 @@ Peça ao agente, nesta ordem:
 2. **Lista de funções** com prova de onde cada uma está e o que ficou sem resposta (o REA devolve evidência e limites; nêo aceite "achismo").
 3. **Plano da sua versêo:** só as funções que você usa, mais as que faltam no original. Aprove o plano antes de o agente escrever código.
 
-Para cada funçêo do plano, o agente segue o mesmo método curto ([seçêo Método do guia](https://inematds.github.io/rea-engenharia-reversa/guia/#metodo)):
+Para cada funçêo do plano, o agente segue o mesmo método curto ([seçêo Método do guia](https://linnoff88-dev.github.io/arckhe-/guia/#metodo)):
 
 - **Uma funçêo por vez.** "Como a busca acha a nota com três letras?", nêo "reverta o app".
 - **Resumo primeiro.** Lê a visêo geral da análise (`detail: "summary"`), abre um módulo e rastreia só aquela funçêo. Nêo roda a mesma análise de novo: guarda o resultado.
@@ -132,4 +132,4 @@ Para muitos apps de desktop antigos, o **software deixa de ser a barreira**. O q
 
 ---
 
-Mais conteúdo aberto e gratuito em **[inema.club](https://inema.club)**.
+Mais conteúdo aberto e gratuito em **[ARCKHÉ AI](https://ARCKHÉ AI)**.

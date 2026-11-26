@@ -1,6 +1,6 @@
 # rea-engenharia-reversa
 
-[![Ingeniería inversa con IA](guia/assets/banner-es.jpg)](https://inematds.github.io/rea-engenharia-reversa/guia/es/)
+[![Ingeniería inversa con IA](guia/assets/banner-es.jpg)](https://linnoff88-dev.github.io/arckhe-/guia/es/)
 
 **[🇧🇷 Português](README.md) · [🇺🇸 English](README.en.md) · 🇪🇸 Español**
 
@@ -8,17 +8,17 @@ Guía en español sobre **REA (Reverse Engineer Anything)**, la herramienta abie
 
 ## 🎬 Video
 
-- **[Lee la app, no el servidor](https://inematds.github.io/rea-engenharia-reversa/videos/#servidor)**: por qué REA lee la app del banco pero no toca tu cuenta, qué se filtra y la regla (1m36, en portugués) · [short](https://www.youtube.com/shorts/Wz1XZyEyFI8)
-- **[REA por dentro (técnico)](https://inematds.github.io/rea-engenharia-reversa/videos/#tecnico)**: por qué funciona, arquitectura, evidencia, la prueba antes y después en 6.4.0 y los límites.
-- **[REA en la práctica](https://inematds.github.io/rea-engenharia-reversa/videos/#na-pratica)**: clona una app en 4 pasos (2 min) · [reel](https://www.youtube.com/shorts/B9D1phZJXWM)
-- **[REA, la IA que hace ingeniería inversa](https://inematds.github.io/rea-engenharia-reversa/videos/#completo)** (6 min, capítulos y subtítulos)
+- **[Lee la app, no el servidor](https://linnoff88-dev.github.io/arckhe-/videos/#servidor)**: por qué REA lee la app del banco pero no toca tu cuenta, qué se filtra y la regla (1m36, en portugués) · [short](https://www.youtube.com/shorts/Wz1XZyEyFI8)
+- **[REA por dentro (técnico)](https://linnoff88-dev.github.io/arckhe-/videos/#tecnico)**: por qué funciona, arquitectura, evidencia, la prueba antes y después en 6.4.0 y los límites.
+- **[REA en la práctica](https://linnoff88-dev.github.io/arckhe-/videos/#na-pratica)**: clona una app en 4 pasos (2 min) · [reel](https://www.youtube.com/shorts/B9D1phZJXWM)
+- **[REA, la IA que hace ingeniería inversa](https://linnoff88-dev.github.io/arckhe-/videos/#completo)** (6 min, capítulos y subtítulos)
 - En YouTube: [clona la app que usas](https://www.youtube.com/watch?v=dwxV0xXdElk) · [¿recrea casi cualquier app?](https://www.youtube.com/watch?v=QQFhiUch0kk) · reels [1](https://www.youtube.com/shorts/eTgtEf5bnvU) [2](https://www.youtube.com/shorts/Hlmma9RB-UM) [3](https://www.youtube.com/shorts/HwbWFVrWC4w) [4](https://www.youtube.com/shorts/QWLSY0LfUAY)
 
 Todos los videos están en portugués.
 
 ## 📖 Guía de uso
 
-Guía completa (landing + paso a paso): **https://inematds.github.io/rea-engenharia-reversa/guia/es/**
+Guía completa (landing + paso a paso): **https://linnoff88-dev.github.io/arckhe-/guia/es/**
 
 ## Qué es
 
@@ -88,7 +88,7 @@ Para binarios nativos (Mac, Windows, Linux) hace falta un descompilador instalad
 
 ### Nueva prueba en 6.4.0 (12/10/2026)
 
-La misma app Electron que se trabó en 6.3.0 terminó en **94,5 s** en 6.4.0, con un pico de 1,26 GB: 202 archivos JS leídos, 0 fallas, 13.500 hallazgos. El archivo que se trababa conservó sus hechos estáticos y el resto quedó como limitación declarada. Lo corrimos aislado (HOME de prueba, límite de memoria y de tiempo) con `--max-heap-mb 1024 --analysis-timeout-ms 60000`. Detalles y el comando en la [guía](https://inematds.github.io/rea-engenharia-reversa/guia/es/#teste64).
+La misma app Electron que se trabó en 6.3.0 terminó en **94,5 s** en 6.4.0, con un pico de 1,26 GB: 202 archivos JS leídos, 0 fallas, 13.500 hallazgos. El archivo que se trababa conservó sus hechos estáticos y el resto quedó como limitación declarada. Lo corrimos aislado (HOME de prueba, límite de memoria y de tiempo) con `--max-heap-mb 1024 --analysis-timeout-ms 60000`. Detalles y el comando en la [guía](https://linnoff88-dev.github.io/arckhe-/guia/es/#teste64).
 
 ### Prueba hecha aquí (10/10/2026)
 
@@ -102,4 +102,4 @@ Corrimos REA 6.3.0 (`analyze-javascript-application`, sin Ghidra y sin MCP) en u
 
 ---
 
-Más contenido abierto y gratuito en **[inema.club](https://inema.club)**.
+Más contenido abierto y gratuito en **[ARCKHÉ AI](https://ARCKHÉ AI)**.
